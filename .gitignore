@@ -1,7 +1,10 @@
 *.pyc
 build
+venv
+.idea
 site
 dist
 *.egg-info
 *.so
 *.swp
+test.py

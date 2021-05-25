@@ -78,14 +78,36 @@ class RecurrentLinearAttention(Module):
         # means it is slower for inference.
         if K.grad_fn is not None or value.grad_fn is not None:
             Zi = Zi + K
-            Si = Si + torch.einsum("nhd,nhm->nhdm", K, value)
+
+            resmul = torch.zeros((K.shape[0], K.shape[1], K.shape[2], value.shape[2])).cuda()
+            for i in range(K.shape[0]):
+                for j in range(K.shape[1]):
+                    resmul[i, j] = torch.outer(K[i, j], value[i, j])
+
+            Si = Si + resmul
+            # Si = Si + torch.einsum("nhd,nhm->nhdm", K, value)
         else:
             Zi += K
-            Si += torch.einsum("nhd,nhm->nhdm", K, value)
+            # res = torch.einsum("nhd,nhm->nhdm", K, value)
+
+            resmul = torch.zeros((K.shape[0], K.shape[1], K.shape[2], value.shape[2])).cuda()
+            for i in range(K.shape[0]):
+                for j in range(K.shape[1]):
+                    resmul[i, j] = torch.outer(K[i, j], value[i, j])
+
+            # Si += res
+            Si += resmul
 
         # Compute the output
-        Z = 1. / (torch.einsum("nhd,nhd->nh", Q, Zi) + self.eps)
-        V = torch.einsum("nhd,nhdm,nh->nhm", Q, Si, Z)
+        # Z = 1. / (torch.einsum("nhd,nhd->nh", Q, Zi) + self.eps)
+        resmul = torch.sum(Q * Zi, dim=2)
+        Z = 1. / (resmul + self.eps)
+
+        # V = torch.einsum("nhd,nhdm,nh->nhm", Q, Si, Z)
+        V = torch.sum(Q[..., None] * Si, dim=-2) * Z[..., None]
+
+        # V = torch.einsum("nhd,nhdm,nh->nhm", Q, Si, Zmul)
+        # same = torch.allclose(res, V)
 
         return V, [Si, Zi]
 

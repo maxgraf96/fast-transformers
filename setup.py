@@ -6,7 +6,7 @@
 #
 
 """Setup fast transformers"""
-
+import platform
 from functools import lru_cache
 from itertools import dropwhile
 from os import path
@@ -115,15 +115,17 @@ def get_extensions():
                 "fast_transformers/causal_product/causal_product_cpu.cpp"
             ],
             extra_compile_args=_get_extra_compile_args()
-        ),
-        CppExtension(
+        )
+    ]
+    if "Windows" not in platform.platform():
+        extensions.append(CppExtension(
             "fast_transformers.local_product.local_product_cpu",
             sources=[
                 "fast_transformers/local_product/local_product_cpu.cpp"
             ],
             extra_compile_args=_get_extra_compile_args()
-        )
-    ]
+        ))
+
     if cuda_toolkit_available():
         from torch.utils.cpp_extension import CUDAExtension
         extensions += [
@@ -175,15 +177,17 @@ def get_extensions():
                     "fast_transformers/causal_product/causal_product_cuda.cu"
                 ],
                 extra_compile_args=["-arch=compute_50"]
-            ),
-            CUDAExtension(
+            )
+        ]
+        if "Windows" not in platform.platform():
+            extensions.append(CUDAExtension(
                 "fast_transformers.local_product.local_product_cuda",
                 sources=[
                     "fast_transformers/local_product/local_product_cuda.cu"
                 ],
                 extra_compile_args=["-arch=compute_50"]
-            )
-        ]
+            ))
+
     return extensions
 
 
