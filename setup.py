@@ -117,14 +117,14 @@ def get_extensions():
             extra_compile_args=_get_extra_compile_args()
         )
     ]
-    if "Windows" not in platform.platform():
-        extensions.append(CppExtension(
-            "fast_transformers.local_product.local_product_cpu",
-            sources=[
-                "fast_transformers/local_product/local_product_cpu.cpp"
-            ],
-            extra_compile_args=_get_extra_compile_args()
-        ))
+    # if "Windows" not in platform.system():
+    #     extensions.append(CppExtension(
+    #         "fast_transformers.local_product.local_product_cpu",
+    #         sources=[
+    #             "fast_transformers/local_product/local_product_cpu.cpp"
+    #         ],
+    #         extra_compile_args=_get_extra_compile_args()
+    #     ))
 
     if cuda_toolkit_available():
         from torch.utils.cpp_extension import CUDAExtension
@@ -179,14 +179,14 @@ def get_extensions():
                 extra_compile_args=["-arch=compute_50"]
             )
         ]
-        if "Windows" not in platform.platform():
-            extensions.append(CUDAExtension(
-                "fast_transformers.local_product.local_product_cuda",
-                sources=[
-                    "fast_transformers/local_product/local_product_cuda.cu"
-                ],
-                extra_compile_args=["-arch=compute_50"]
-            ))
+        # if "Windows" not in platform.system():
+        #     extensions.append(CUDAExtension(
+        #         "fast_transformers.local_product.local_product_cuda",
+        #         sources=[
+        #             "fast_transformers/local_product/local_product_cuda.cu"
+        #         ],
+        #         extra_compile_args=["-arch=compute_50"]
+        #     ))
 
     return extensions
 

@@ -5,10 +5,10 @@
 
 import torch
 
-from .local_product_cpu import local_dot_product as local_dot_product_cpu, \
-    local_dot_backward as local_dot_backward_cpu, \
-    local_weighted_average as local_weighted_average_cpu, \
-    local_weighted_average_backward as local_weighted_average_backward_cpu
+# from .local_product_cpu import local_dot_product as local_dot_product_cpu, \
+#     local_dot_backward as local_dot_backward_cpu, \
+#     local_weighted_average as local_weighted_average_cpu, \
+#     local_weighted_average_backward as local_weighted_average_backward_cpu
 
 try:
     from .local_product_cuda import \
