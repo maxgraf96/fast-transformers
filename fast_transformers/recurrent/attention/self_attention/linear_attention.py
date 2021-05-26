@@ -82,7 +82,13 @@ class RecurrentLinearAttention(Module):
             resmul = torch.zeros((K.shape[0], K.shape[1], K.shape[2], value.shape[2])).cuda()
             for i in range(K.shape[0]):
                 for j in range(K.shape[1]):
-                    resmul[i, j] = torch.outer(K[i, j], value[i, j])
+                    left = K[i, j]
+                    right = value[i, j]
+                    resi = torch.zeros((left.shape[0], right.shape[0])).cuda()
+                    for k in range(left.shape[0]):
+                        for l in range(right.shape[0]):
+                            resi[k, l] = left[k] * right[l]
+                    resmul[i, j] = resi
 
             Si = Si + resmul
             # Si = Si + torch.einsum("nhd,nhm->nhdm", K, value)
@@ -93,7 +99,14 @@ class RecurrentLinearAttention(Module):
             resmul = torch.zeros((K.shape[0], K.shape[1], K.shape[2], value.shape[2])).cuda()
             for i in range(K.shape[0]):
                 for j in range(K.shape[1]):
-                    resmul[i, j] = torch.outer(K[i, j], value[i, j])
+                    left = K[i, j]
+                    right = value[i, j]
+                    resi = torch.zeros((left.shape[0], right.shape[0])).cuda()
+                    for k in range(left.shape[0]):
+                        for l in range(right.shape[0]):
+                            resi[k, l] = left[k] * right[l]
+                    # resmul[i, j] = torch.outer(K[i, j], value[i, j])
+                    resmul[i, j] = resi
 
             # Si += res
             Si += resmul
