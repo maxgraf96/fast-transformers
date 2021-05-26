@@ -5,7 +5,7 @@
 #
 
 """Implement the causally masked linear attention as a recurrent model."""
-
+import numpy as np
 import torch
 from torch.nn import Module
 
@@ -43,6 +43,8 @@ class RecurrentLinearAttention(Module):
         )
         self.eps = eps
         self.event_dispatcher = EventDispatcher.get(event_dispatcher)
+        # self.resmulouter = torch.zeros((1, 8, query_dimensions, query_dimensions)).cuda()
+
 
     def forward(self, query, key, value, state=None, memory=None):
         # Normalize state/memory
@@ -79,37 +81,23 @@ class RecurrentLinearAttention(Module):
         if K.grad_fn is not None or value.grad_fn is not None:
             Zi = Zi + K
 
-            resmul = torch.zeros((K.shape[0], K.shape[1], K.shape[2], value.shape[2])).cuda()
             for i in range(K.shape[0]):
                 for j in range(K.shape[1]):
-                    left = K[i, j]
-                    right = value[i, j]
-                    resi = torch.zeros((left.shape[0], right.shape[0])).cuda()
-                    for k in range(left.shape[0]):
-                        for l in range(right.shape[0]):
-                            resi[k, l] = left[k] * right[l]
-                    resmul[i, j] = resi
+                    Si[i, j] += K[i, j][..., None] * value[i, j]
 
-            Si = Si + resmul
+            # Si = Si + self.resmulouter
             # Si = Si + torch.einsum("nhd,nhm->nhdm", K, value)
         else:
             Zi += K
-            # res = torch.einsum("nhd,nhm->nhdm", K, value)
+            # resmul = torch.einsum("nhd,nhm->nhdm", K, value)
 
-            resmul = torch.zeros((K.shape[0], K.shape[1], K.shape[2], value.shape[2])).cuda()
             for i in range(K.shape[0]):
                 for j in range(K.shape[1]):
-                    left = K[i, j]
-                    right = value[i, j]
-                    resi = torch.zeros((left.shape[0], right.shape[0])).cuda()
-                    for k in range(left.shape[0]):
-                        for l in range(right.shape[0]):
-                            resi[k, l] = left[k] * right[l]
-                    # resmul[i, j] = torch.outer(K[i, j], value[i, j])
-                    resmul[i, j] = resi
+                    Si[i, j] += K[i, j][..., None] * value[i, j]
 
+            # s = torch.allclose(self.resmulouter, res)
             # Si += res
-            Si += resmul
+            # Si += self.resmulouter
 
         # Compute the output
         # Z = 1. / (torch.einsum("nhd,nhd->nh", Q, Zi) + self.eps)
