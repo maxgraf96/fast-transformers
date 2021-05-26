@@ -83,7 +83,7 @@ class RecurrentLinearAttention(Module):
 
             for i in range(K.shape[0]):
                 for j in range(K.shape[1]):
-                    Si[i, j] += K[i, j][..., None] * value[i, j]
+                    Si[i, j] += K[i, j].unsqueeze(1) * value[i, j]
 
             # Si = Si + self.resmulouter
             # Si = Si + torch.einsum("nhd,nhm->nhdm", K, value)
@@ -93,7 +93,7 @@ class RecurrentLinearAttention(Module):
 
             for i in range(K.shape[0]):
                 for j in range(K.shape[1]):
-                    Si[i, j] += K[i, j][..., None] * value[i, j]
+                    Si[i, j] += K[i, j].unsqueeze(1) * value[i, j]
 
             # s = torch.allclose(self.resmulouter, res)
             # Si += res
