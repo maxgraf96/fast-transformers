@@ -78,22 +78,39 @@ class RecurrentLinearAttention(Module):
         # NOTE: The if clause is added due to GitHub PR #10. Simply using the
         # following two lines does not perform the operation in place which
         # means it is slower for inference.
+        test = torch.zeros((64, 64)).cuda()
         if K.grad_fn is not None or value.grad_fn is not None:
             Zi = Zi + K
 
-            for i in range(K.shape[0]):
-                for j in range(K.shape[1]):
-                    Si[i, j] += K[i, j].unsqueeze(1) * value[i, j]
+            for i in range(1):
+                # for j in range(K.shape[1]):
+                for j in range(8):
+                    # asdf = K[i, j] * value[i, j]
+                    # test = torch.cat([test, K[i, j]], dim=1)
+                    test2 = K[i, j].unsqueeze(1) * value[i, j]
+                    test = torch.cat([test, test2], dim=0)
+                    # Si[i, j] += asdf
 
-            # Si = Si + self.resmulouter
+            asdf = torch.reshape(test[64:], (1, 8, 64, 64))
+            # final = torch.stack([asdf, test], dim = 0)
+            Si = Si + asdf
             # Si = Si + torch.einsum("nhd,nhm->nhdm", K, value)
         else:
             Zi += K
             # resmul = torch.einsum("nhd,nhm->nhdm", K, value)
 
-            for i in range(K.shape[0]):
-                for j in range(K.shape[1]):
-                    Si[i, j] += K[i, j].unsqueeze(1) * value[i, j]
+            for i in range(1):
+                # for j in range(K.shape[1]):
+                for j in range(8):
+                    # asdf = K[i, j] * value[i, j]
+                    # test = torch.cat([test, K[i, j]], dim=1)
+                    test2 = K[i, j].unsqueeze(1) * value[i, j]
+                    test = torch.cat([test, test2], dim=0)
+                    # Si[i, j] += asdf
+
+            asdf = torch.reshape(test[64:], (1, 8, 64, 64))
+            # final = torch.stack([asdf, test], dim = 0)
+            Si = Si + asdf
 
             # s = torch.allclose(self.resmulouter, res)
             # Si += res
